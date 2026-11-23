@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private UserService service;
+
+    private final UserService service;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponseDTO> registerUser(@RequestBody RegisterRequestDTO dto) {
@@ -26,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(service.login(dto));
     }
 
 }

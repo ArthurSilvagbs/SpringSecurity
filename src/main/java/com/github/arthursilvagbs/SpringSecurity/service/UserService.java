@@ -1,6 +1,6 @@
 package com.github.arthursilvagbs.SpringSecurity.service;
 
-import com.github.arthursilvagbs.SpringSecurity.config.SecurityConfig;
+import com.github.arthursilvagbs.SpringSecurity.config.TokenService;
 import com.github.arthursilvagbs.SpringSecurity.domain.User;
 import com.github.arthursilvagbs.SpringSecurity.dtos.LoginRequestDTO;
 import com.github.arthursilvagbs.SpringSecurity.dtos.LoginResponseDTO;
@@ -12,19 +12,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenConfig;
 
     @Transactional
     public RegisterResponseDTO registerUser(RegisterRequestDTO dto) {
@@ -46,12 +44,11 @@ public class UserService implements UserDetailsService {
         );
 
         Authentication authentication = authenticationManager.authenticate(userAndPass);
-    }
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return repository.findUserByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado. "));
+        User user = (User) authentication.getPrincipal();
+        String token = tokenConfig.generateToken(user);
+
+        return new LoginResponseDTO(token);
     }
 }
 
